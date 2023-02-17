@@ -1,12 +1,13 @@
-#include <string>
 #include <iostream>
+#include <string>
 
 #include "cli.h"
 #include "vcs.h"
 
-bool handle_init_command(const std::vector<std::string>& args) {
+bool handle_init_command(const std::vector<std::string> &args) {
   if (!args.empty()) {
-    std::cerr << "Error: init command does not take any arguments." << std::endl;
+    std::cerr << "Error: init command does not take any arguments."
+              << std::endl;
     return false;
   }
 
@@ -19,44 +20,49 @@ bool handle_init_command(const std::vector<std::string>& args) {
   return true;
 }
 
-bool handle_commit_command(const std::vector<std::string>& args) {
+bool handle_commit_command(const std::vector<std::string> &args) {
   if (args.empty()) {
-    std::cerr << "Error: commit command requires a message argument." << std::endl;
+    std::cerr << "Error: commit command requires a message argument."
+              << std::endl;
     return false;
   }
 
   return vcs_commit(args[0]);
 }
 
-bool handle_diff_command(const std::vector<std::string>& args) {
+bool handle_diff_command(const std::vector<std::string> &args) {
   if (!args.empty()) {
-    std::cerr << "Error: diff command does not take any arguments." << std::endl;
+    std::cerr << "Error: diff command does not take any arguments."
+              << std::endl;
     return false;
   }
 
-  std::cout << "Displaying differences between current state and latest commit" << std::endl;
+  std::cout << "Displaying differences between current state and latest commit"
+            << std::endl;
 
   return true;
 }
 
-bool handle_help_command(const std::vector<std::string>& args) {
+bool handle_help_command(const std::vector<std::string> &args) {
   if (!args.empty()) {
-    std::cerr << "Error: help command does not take any arguments." << std::endl;
+    std::cerr << "Error: help command does not take any arguments."
+              << std::endl;
     return false;
   }
 
-  std::cout << "Usage: vcs <command> [<args>]\n\n";
-  std::cout << "Commands:\n";
-  std::cout << "  init    Create an empty vcs repository in the current directory\n";
-  std::cout << "  commit  Record changes to the repository\n";
-  std::cout << "  diff    Show differences between current state and last commit\n";
-  std::cout << "  log     Show the commit history\n";
-  std::cout << "  help    Show this message\n";
+  std::cout
+      << "Usage: vcs <command> [<args>]\n\n"
+         "Commands:\n"
+         "  init    Create an empty vcs repository in the current directory\n"
+         "  commit  Record changes to the repository\n"
+         "  diff    Show differences between current state and last commit\n"
+         "  log     Show the commit history\n"
+         "  help    Show this message\n";
 
   return true;
 }
 
-bool handle_log_command(const std::vector<std::string>& args) {
+bool handle_log_command(const std::vector<std::string> &args) {
   if (!args.empty()) {
     std::cerr << "Error: log command does not take any arguments." << std::endl;
     return false;

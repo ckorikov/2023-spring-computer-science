@@ -1,17 +1,15 @@
-#include <string>
-#include <iostream>
-#include <filesystem>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
 #include <algorithm>
 #include <chrono>
 #include <cstring>
 #include <dirent.h>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
 #include <sstream>
-#include <unistd.h>
+#include <string>
 #include <sys/stat.h>
+#include <unistd.h>
+#include <vector>
 
 #include "vcs.h"
 
@@ -31,8 +29,7 @@ bool vcs_init() {
   return true;
 }
 
-
-bool vcs_commit(const std::string& message) {
+bool vcs_commit(const std::string &message) {
   // Code to update the version control repository with the changes
 
   // For this example, we'll just output a message
@@ -73,7 +70,8 @@ std::string compute_file_hash(const fs::path &path) {
   std::size_t hash_value = hash_fn(data);
 
   std::stringstream ss;
-  ss << std::hex << std::setfill('0') << std::setw(sizeof(std::size_t) * 2) << hash_value;
+  ss << std::hex << std::setfill('0') << std::setw(sizeof(std::size_t) * 2)
+     << hash_value;
   return ss.str();
 }
 
@@ -87,11 +85,13 @@ std::unordered_map<std::string, std::string> create_snapshot() {
   for (const auto &entry : fs::recursive_directory_iterator(".")) {
     if (!fs::is_directory(entry.path())) {
       copy_from_to(entry.path(), snapshot_dir / entry.path().filename());
-      file_hashes[entry.path().string().substr(2)] = compute_file_hash(entry.path());
+      file_hashes[entry.path().string().substr(2)] =
+          compute_file_hash(entry.path());
     }
   }
 
-  auto hashes_log_file_path = fs::path(snapshot_dir) / std::string("hashes.log");
+  auto hashes_log_file_path =
+      fs::path(snapshot_dir) / std::string("hashes.log");
   std::ofstream hashes_log_file(hashes_log_file_path);
   for (const auto &[file, hash] : file_hashes) {
     hashes_log_file << file << ' ' << hash << '\n';
