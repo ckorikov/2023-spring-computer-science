@@ -21,6 +21,8 @@ int main(int argc, char* argv[]) {
     handle_diff_command(args);
   } else if (command == "log") {
     handle_log_command(args);
+  } else if (command == "-h"){
+    handle_help_command(args);
   } else {
     std::cerr << "Error: unknown command: " << command << std::endl;
     return 1;
