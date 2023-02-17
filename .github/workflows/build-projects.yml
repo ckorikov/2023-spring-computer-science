@@ -1,0 +1,23 @@
+name: Build Projects
+
+on:
+  push:
+    branches: [ main ]
+      
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install CMake
+      run: sudo apt-get install -y cmake
+
+    - name: Build project 01_vcs
+      working-directory: 01_vcs
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+        make
