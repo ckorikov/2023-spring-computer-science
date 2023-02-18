@@ -616,5 +616,135 @@ void checkout_commit_id(string commit_id){
         }
     }
 }
+void create_branch_and_checkout(string branch_name) {
+    if (fs::exists(fs::path(".revisions/files"))) {
+        cout<<"Commit your changes before creating branch!\n";
+        return;
+    } else {
+        if (!fs::exists(".revisions/branches/" + branch_name)){
+            fs::create_directory(".revisions/branches/" + branch_name);
+            std::ofstream branches;
+            branches.open(".revisions/branches/branches.txt", std::ios_base::app);
+            branches << branch_name<<endl;
+            branches.close();
+            std::ofstream head;
+            head.open(".revisions/HEAD", std::ios::trunc);
+            head << branch_name << endl;
+            head.close();
+            cout<<"Created branch "<<branch_name<<"\n";        
+            return;
+        } else {
+            std::ofstream head;
+            head.open(".revisions/HEAD", std::ios::trunc);
+            head << branch_name << endl;
+            head.close();
+            return;
+        }
+    }
+}
 
+
+void display_branches() {
+    status();
+    std::ifstream file(".revisions/HEAD");
+    string current_branch;
+    std::getline(file, current_branch);
+    file.close();
+
+    std::ifstream branches(".revisions/branches/branches.txt");
+    string line;
+    cout<<"Branches:\n";
+    while(std::getline(branches,line)) {
+        if(strcmp(line.c_str(), current_branch.c_str()) == 0) {
+            cout<<"* "<<line<<endl;
+        } else {
+            cout<<line<<endl;
+        }
+    }
+    branches.close();
+}
+
+void merge(string branch_2, string branch_1) {
+    fs::copy_options copyOptions = fs::copy_options::update_existing | fs::copy_options::recursive;
+    fs::copy(".revisions/commits/" + branch_2, ".revisions/commits/" + branch_1, copyOptions);
+    cout<<"Merged commits!"<<endl;
+}
+
+void display_help() {
+    cout<<"Usage: ./main.out [--help] [status] [commit <message>] [push] [checkout <commit_id>] [log]\n\n";
+    cout<<"\t Status: Prints current status of files in repository\n";
+    cout<<"\t Commit: Records the revised files to local storage\n";
+    cout<<"\t Push: Pushes the file changes to remote server\n";
+    cout<<"\t Log: Displays the log messages for previous commits\n";
+    cout<<"\t Checkout: Go back to some particular commit\n";
+}
+
+bool check_args(const std::string &value, const std::vector<std::string> &array)
+{
+    return std::find(array.begin(), array.end(), value) != array.end();
+}
+
+int main(int argc, char* argv[])
+{
+    std::vector<std::string> commands {"status", "commit", "push", "remove", "log", "--help", "checkout", "branch", "merge"};
+    create_table();
+    if (!fs::exists(".revisions")) {
+        create_revisions_directory(".revisions");
+        std::ofstream head(".revisions/HEAD");
+        head << "main";
+        head.close();
+        create_revisions_directory(".revisions/branches/");
+        std::ofstream branches(".revisions/branches/branches.txt");
+        branches << "main\n";
+        branches.close();
+    }
+
+    if (argc == 1) {
+        cout<<"Incorrect usage. Run ./a.out <add/commit/push>. Run ./main.out --help for more information."<<endl;
+        return 1;
+    }
+
+    if (check_args(argv[1], commands)) {
+        if (strcmp(argv[1], "commit") == 0){
+            if (argc != 3) {
+                cout<<"Invalid format: Enter ./main.out commit <message> "<<endl;
+                return -1;
+            }
+            commit(argv[2]);
+        }
+        if (strcmp(argv[1], "status") == 0)
+            status();
+        if (strcmp(argv[1], "log") == 0)
+            show_log();
+        if (strcmp(argv[1], "push") == 0)
+            push_to_server();
+        if (strcmp(argv[1], "--help") == 0)
+            display_help();
+        if (strcmp(argv[1], "checkout") == 0){
+            if (!(2<argc<4)) {
+                cout<<"Invalid format: Enter ./main.out checkout <commit_id> or ./main.out checkout -b <branch_name>"<<endl;
+                return -1;
+            }
+            if (strcmp(argv[2], "-b")!=0)
+                checkout_commit_id(argv[2]);
+            else {
+                create_branch_and_checkout(argv[3]);
+            }
+        }
+        if ((strcmp(argv[1], "branch") == 0)) {
+            display_branches();
+        }
+        if (strcmp(argv[1], "merge") == 0){
+            if (argc != 4)
+                cout<<"Invalid format: Enter ./main.out merge <branch2> <branch1>"<<endl;
+            else {
+                merge(argv[2], argv[3]);
+            }
+        }
+    }
+    else {
+        cout<<"Unknown command: "<<argv[1]<<endl<<"Run ./a.out <add/commit/push>"<<endl;
+    }
+    return 0;
+}
 
