@@ -38,7 +38,7 @@ std::vector<string> IGNORE {".git", "revisions"};
 
 void write_file(string text) {
     std::ofstream outfile;
-    outfile.open("Git.txt", std::ios_base::app);
+    outfile.open("Gfg.txt", std::ios_base::app);
     outfile << text; 
 }
 
