@@ -154,6 +154,66 @@ void insert(string file_path, sqlite3 *db) {
             fprintf(stdout, "Records created successfully\n");
         }
     }
+}
+
+int create_table() {
+    sqlite3 *db;
+    char *errmessage = 0;
+    int connection;
+    connection = sqlite3_open("vcs.db", &db);
+
+    if (!connection) {
+        string query = "CREATE TABLE files (id INTEGER PRIMARY KEY DEFAULT 0, file_path VARCHAR(2048), created_at DATETIME DEFAULT(datetime('now', 'localtime')), file_size INTEGER);";
+        connection = sqlite3_exec(db, query.c_str(), callback, 0, &errmessage);   
+
+        if( connection != SQLITE_OK ){
+            sqlite3_free(errmessage);
+        } else {
+            fprintf(stdout, "Files table created successfully\n");
+        }
+    }
+    
+    connection = sqlite3_open("vcs.db", &db);
+    if (!connection){
+        string query = "CREATE TABLE commits (id INTEGER PRIMARY KEY DEFAULT 0, message VARCHAR(256), branch VARCHAR(256),local_created_at DATETIME DEFAULT(datetime('now', 'localtime')), remote_created_at DATETIME NULL, num_files_changed INTEGER);";
+        connection = sqlite3_exec(db, query.c_str(), callback, 0, &errmessage);   
+
+        if( connection != SQLITE_OK ){
+            sqlite3_free(errmessage);
+        } else {
+            fprintf(stdout, "Commit table created successfully\n");
+        }
+    }
+
+    connection = sqlite3_open("vcs.db", &db);
+    if (!connection) {
+        string query = "CREATE TABLE file_revisions(id INTEGER PRIMARY KEY DEFAULT 0, file_path VARCHAR(1024),is_added BOOLEAN, is_removed BOOLEAN, is_modified BOOLEAN, commit_id INT, FOREIGN KEY(commit_id) REFERENCES commits(id) ON DELETE CASCADE);";
+        connection = sqlite3_exec(db, query.c_str(), callback, 0, &errmessage);   
+
+        if( connection != SQLITE_OK ){
+            sqlite3_free(errmessage);
+        } else {
+            fprintf(stdout, "Revisions table created successfully\n");
+        }
+    }
+
+    connection = sqlite3_open("vcs.db", &db);
+    if (!connection) {
+        string query = "CREATE TABLE commits_to_push (id INTEGER PRIMARY KEY DEFAULT 0, commit_id INT, FOREIGN KEY(commit_id) REFERENCES commits(id) ON DELETE CASCADE);";
+        connection = sqlite3_exec(db, query.c_str(), callback, 0, &errmessage);   
+
+        if( connection != SQLITE_OK ){
+            sqlite3_free(errmessage);
+        } else {
+            fprintf(stdout, "Revisions table created successfully\n");
+        }   
+    }
+
+    sqlite3_close(db);
+    return 0;
+}
+
+
     int file_revision(std::vector<string> file_paths, string revision_type) {
     if (file_paths.empty())
         return 0;
@@ -391,61 +451,6 @@ void commit(std::string message) {
     head_file << commit_id;
     head_file.close();
 }
-}
 
-int create_table() {
-    sqlite3 *db;
-    char *errmessage = 0;
-    int connection;
-    connection = sqlite3_open("vcs.db", &db);
 
-    if (!connection) {
-        string query = "CREATE TABLE files (id INTEGER PRIMARY KEY DEFAULT 0, file_path VARCHAR(2048), created_at DATETIME DEFAULT(datetime('now', 'localtime')), file_size INTEGER);";
-        connection = sqlite3_exec(db, query.c_str(), callback, 0, &errmessage);   
 
-        if( connection != SQLITE_OK ){
-            sqlite3_free(errmessage);
-        } else {
-            fprintf(stdout, "Files table created successfully\n");
-        }
-    }
-    
-    connection = sqlite3_open("vcs.db", &db);
-    if (!connection){
-        string query = "CREATE TABLE commits (id INTEGER PRIMARY KEY DEFAULT 0, message VARCHAR(256), branch VARCHAR(256),local_created_at DATETIME DEFAULT(datetime('now', 'localtime')), remote_created_at DATETIME NULL, num_files_changed INTEGER);";
-        connection = sqlite3_exec(db, query.c_str(), callback, 0, &errmessage);   
-
-        if( connection != SQLITE_OK ){
-            sqlite3_free(errmessage);
-        } else {
-            fprintf(stdout, "Commit table created successfully\n");
-        }
-    }
-
-    connection = sqlite3_open("vcs.db", &db);
-    if (!connection) {
-        string query = "CREATE TABLE file_revisions(id INTEGER PRIMARY KEY DEFAULT 0, file_path VARCHAR(1024),is_added BOOLEAN, is_removed BOOLEAN, is_modified BOOLEAN, commit_id INT, FOREIGN KEY(commit_id) REFERENCES commits(id) ON DELETE CASCADE);";
-        connection = sqlite3_exec(db, query.c_str(), callback, 0, &errmessage);   
-
-        if( connection != SQLITE_OK ){
-            sqlite3_free(errmessage);
-        } else {
-            fprintf(stdout, "Revisions table created successfully\n");
-        }
-    }
-
-    connection = sqlite3_open("vcs.db", &db);
-    if (!connection) {
-        string query = "CREATE TABLE commits_to_push (id INTEGER PRIMARY KEY DEFAULT 0, commit_id INT, FOREIGN KEY(commit_id) REFERENCES commits(id) ON DELETE CASCADE);";
-        connection = sqlite3_exec(db, query.c_str(), callback, 0, &errmessage);   
-
-        if( connection != SQLITE_OK ){
-            sqlite3_free(errmessage);
-        } else {
-            fprintf(stdout, "Revisions table created successfully\n");
-        }   
-    }
-
-    sqlite3_close(db);
-    return 0;
-}
