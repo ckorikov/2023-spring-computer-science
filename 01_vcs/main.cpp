@@ -451,6 +451,170 @@ void commit(std::string message) {
     head_file << commit_id;
     head_file.close();
 }
+void status () {
+    fs::remove_all(fs::path(".revisions/files/"));
+    sqlite3 *db;
+    char *errmessage = 0;
+    int connection;
+    connection = sqlite3_open("vcs.db", &db);
 
+    std::vector<pair<string, int>>db_files; 
+    std::vector<string> removed;
+    std::vector<string> modified;
+
+    if (!connection) {
+        string query = "SELECT file_path, file_size FROM files;";
+
+        connection = sqlite3_exec(db, query.c_str(), get_db_files_callback, &db_files, &errmessage);   
+        if( connection != SQLITE_OK ){
+            fprintf(stderr, "SQL error: %s\n", errmessage);
+            sqlite3_free(errmessage);
+        } else {
+        
+            std::vector<string> files_ls;
+            listdir(files_ls);
+            for(int i=0; i<db_files.size(); i++) {
+                auto idx = std::find(files_ls.begin(), files_ls.end(), db_files[i].first);
+                if (idx != files_ls.end()) {
+                    std::filesystem::path p {files_ls[idx - files_ls.begin()]};
+                    int size;
+                    if (std::filesystem::is_directory(p)) {
+                        size = 0;
+                    } else {
+                        size = std::filesystem::file_size(p);
+                    }
+                    if (db_files[i].second == size){
+                        files_ls.erase(std::remove(files_ls.begin(), files_ls.end(), db_files[i].first), files_ls.end());
+                    }
+                    else {
+                        files_ls.erase(std::remove(files_ls.begin(), files_ls.end(), db_files[i].first), files_ls.end());
+                        modified.push_back(db_files[i].first);
+                    }
+                }
+                else  
+                    removed.push_back(db_files[i].first);
+            }
+
+            cout<<"Removed: "<<removed.size()<<endl;
+            cout<<"Added: "<<files_ls.size()<<endl;
+            cout<<"Modified: "<<modified.size()<<endl;
+            file_revision(files_ls, "added");
+            for(int i = 0; i < files_ls.size(); i++){
+                cout<<"\n\u001b[32m[ADDED] "<<files_ls[i]<<"\u001b[0m";
+            }
+            file_revision(modified, "modified");
+            for (int i = 0; i < modified.size(); i++){
+                cout<<"\n\u001b[33m[MODIFIED]"<<modified[i]<<"\u001b[0m";     
+            } 
+            file_revision(removed, "removed");
+            for (int i = 0; i < removed.size(); i++){
+                cout<<"\n\u001b[31m[REMOVED]"<<removed[i]<<"\u001b[0m";
+            }
+        }
+    } else {
+        cout<<"could not open database";
+    }
+    cout<<endl;
+    sqlite3_close(db);
+}
+
+void show_log() {
+    sqlite3 *db;
+    char *errmessage = 0;
+    int connection;
+    int n = 1;
+    cout<<"Enter number of commits to see log of: ";
+    cin>>n;
+    std::ifstream file(".revisions/HEAD");
+    string current_branch;
+    std::getline(file, current_branch);
+    file.close();
+
+    connection = sqlite3_open("vcs.db", &db);
+    vector<vector<string>> commit_info;
+    if (!connection) {
+        string query = "SELECT id, message, local_created_at from commits WHERE branch='" + current_branch + "' ORDER BY local_created_at DESC LIMIT " + to_string(n) +  ";";
+        connection = sqlite3_exec(db, query.c_str(), get_commits_info, &commit_info, &errmessage);     
+        if( connection != SQLITE_OK ){
+                fprintf(stderr, "SQL error: %s\n", errmessage);
+                sqlite3_free(errmessage);
+        } else {}
+    }
+    for(int i=0; i<commit_info.size(); i++){
+        cout<<"--------------------------\n";
+        cout<<"Commit ID: "<<commit_info[i][0]<<endl;
+        cout<<"Message: "<<commit_info[i][1]<<endl;
+        cout<<"Timestamp: "<<commit_info[i][2]<<endl;
+    }
+    cout<<"Branch: "<<current_branch<<endl;
+}
+
+
+int push_to_server() {
+    sqlite3 *db;
+    char *errmessage = 0;
+    int connection;
+
+    std::vector<string> commit_ids;
+    connection = sqlite3_open("vcs.db", &db);
+    int commit_id = 0;
+    if (!connection) {
+        string query = "SELECT commit_id from commits_to_push;";
+        connection = sqlite3_exec(db, query.c_str(), get_files_in_commit, &commit_ids, &errmessage);     
+        if( connection != SQLITE_OK ){
+                fprintf(stderr, "SQL error: %s\n", errmessage);
+                sqlite3_free(errmessage);
+        } else {}
+    }
+    if (commit_ids.size() == 0) {
+        cout<<"No commits to push"<<endl;
+        return 0;
+    }
+
+    connection = sqlite3_open("vcs.db", &db);
+    std::vector<string> file_revisions;
+    for(int i=0; i<commit_ids.size(); i++){
+        string query = "SELECT (file_path) from file_revisions WHERE commit_id = " +  commit_ids[i] + " AND is_removed IS NULL;";
+        connection = sqlite3_exec(db, query.c_str(), get_files_in_commit, &file_revisions, &errmessage);
+        if (connection != SQLITE_OK) {
+            fprintf(stderr, "SQL error: %s\n", errmessage);
+            sqlite3_free(errmessage);
+        } else {
+            for (int i = 0; i < file_revisions.size(); i++) 
+                cout<<file_revisions[i]<<endl;
+        }
+    }
+    
+    for(int i=0; i<commit_ids.size(); i++){
+        connection = sqlite3_open("vcs.db", &db);
+        string query = "DELETE FROM commits_to_push WHERE commit_id = " + commit_ids[i] + ";";
+        connection = sqlite3_exec(db, query.c_str(), callback, 0, &errmessage);
+    }
+
+    cout<<"\u001b[32mPushed successfully to server!\u001b[0m"<<endl;
+    return 0;
+}
+
+void checkout_commit_id(string commit_id){
+
+    fs::copy_options copyOptions = fs::copy_options::update_existing | fs::copy_options::recursive;
+    for(int i = 1; i < stoi(commit_id)+1; i++) {
+        try {
+            std::filesystem::copy(fs::path(".revisions/commits/" + to_string(i) + "/"), fs::path("./tmp"), copyOptions);
+            if (fs::exists("./tmp/deleted.txt")){
+                cout<<"exists"<<endl;
+                std::ifstream tmp_file("./tmp/deleted.txt");
+                string line;
+                while(std::getline(tmp_file,line)){
+                    fs::remove("./tmp/" + line);
+                }
+            }
+            fs::remove("./tmp/deleted.txt");
+        }
+        catch(int i) {
+            cout<<"Exception: "<<i<<endl;
+        }
+    }
+}
 
 
