@@ -1,17 +1,12 @@
 #include <algorithm>
-#include <chrono>
-#include <cstring>
-#include <dirent.h>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <regex>
-#include <sstream>
 #include <string>
-#include <sys/stat.h>
-#include <unistd.h>
+#include <unordered_map>
 #include <vector>
 
+#include <utils.hpp>
 #include <vcs.hpp>
 
 namespace vcs {
@@ -33,20 +28,7 @@ bool init() {
   return true;
 }
 
-/// @brief Get next snapthot id (0, 1...)
-/// @return int snapthot id
-int get_next_snapshot_id() {
-  int snapshot_id = 0;
-  std::string snapshot_dir =
-      ".archive/snapshots/" + std::to_string(snapshot_id);
-  while (fs::exists(snapshot_dir)) {
-    snapshot_id++;
-    snapshot_dir = ".archive/snapshots/" + std::to_string(snapshot_id);
-  }
-  return snapshot_id;
-}
-
-/// @brief `create_snapshot()` wrapper
+/// @brief Create new snapshot
 /// @param message Snapshot info message
 /// @return False if no changes or if not in repo, otherwise true
 bool snapshot(const std::string &message) {
@@ -61,42 +43,8 @@ bool snapshot(const std::string &message) {
 
   std::ofstream snapshot_info_file(snapshot_dir / "info");
   snapshot_info_file << snapshot_id << ": " << message;
-  // std::cout << "Snapshotting changes with message: " << message << std::endl;
+  std::cout << "Snapshot changes with message: " << message << std::endl;
 
-  return create_snapshot(snapshot_dir);
-}
-
-/// @brief File copy wrapper
-/// @param src_path Source file
-/// @param dst_path Dest file
-void copy_from_to(const fs::path &src_path, const fs::path &dst_path) {
-  std::ifstream src(src_path, std::ios::binary);
-  std::ofstream dst(dst_path, std::ios::binary);
-  dst << src.rdbuf();
-}
-
-/// @brief Get file hash
-/// @param path File path
-/// @return Hash string
-std::string get_file_hash(const fs::path &path) {
-  std::ifstream src(path, std::ios::binary);
-  src.clear();
-  src.seekg(0, std::ios::beg);
-  std::istreambuf_iterator<char> src_begin(src);
-  std::istreambuf_iterator<char> src_end;
-  std::string data(src_begin, src_end);
-  std::hash<std::string> hash_fn;
-  std::size_t hash_value = hash_fn(data);
-
-  std::stringstream ss;
-  ss << std::hex << std::setfill('0') << std::setw(sizeof(std::size_t) * 2)
-     << hash_value;
-  return ss.str();
-}
-
-/// @brief
-/// @return
-bool create_snapshot(fs::path &snapshot_dir) {
   std::unordered_map<std::string, std::string> file_hashes;
 
   for (const auto &entry : fs::recursive_directory_iterator(".")) {
@@ -137,6 +85,61 @@ bool revert(const std::string &id) {
       copy_from_to(entry.path(),
                    "./" + entry.path().string().substr(path.length()));
     }
+  }
+
+  return true;
+}
+
+/// @brief Show filetree diff
+/// @param id Snapshot id
+/// @return true
+bool diff(const std::string &id) {
+  if (!fs::is_directory("./.archive/snapshots/" + id)) {
+    std::cout << "No such snapshot" << std::endl;
+    return false;
+  }
+  std::string snapshot_path = "./.archive/snapshots/" + id + "/files/";
+
+  std::vector<std::string> snapshot_files, current_files, deleted_files,
+      created_files, common_files;
+
+  for (const auto &entry : fs::recursive_directory_iterator(snapshot_path)) {
+    current_files.push_back(
+        entry.path().string().substr(snapshot_path.length()));
+  }
+
+  for (const auto &entry : fs::recursive_directory_iterator(".")) {
+    if (entry.path().string().rfind("./.archive", 0) == 0)
+      continue;
+    snapshot_files.push_back(entry.path().string().substr(2));
+  }
+
+  std::sort(snapshot_files.begin(), snapshot_files.end());
+  std::sort(current_files.begin(), current_files.end());
+
+  std::set_difference(snapshot_files.begin(), snapshot_files.end(),
+                      current_files.begin(), current_files.end(),
+                      std::back_inserter(created_files));
+
+  std::set_difference(current_files.begin(), current_files.end(),
+                      snapshot_files.begin(), snapshot_files.end(),
+                      std::back_inserter(deleted_files));
+
+  std::set_intersection(current_files.begin(), current_files.end(),
+                        snapshot_files.begin(), snapshot_files.end(),
+                        std::back_inserter(common_files));
+
+  std::cout << "\t---\n";
+
+  for (const auto &entry : deleted_files)
+    std::cout << "Deleted " << entry << "\n\t---\n";
+
+  for (const auto &entry : created_files)
+    std::cout << "Created " << entry << "\n\t---\n";
+
+  for (const auto &entry : common_files) {
+    file_diff(entry, snapshot_path + entry);
+    std::cout << "\t---\n";
   }
 
   return true;

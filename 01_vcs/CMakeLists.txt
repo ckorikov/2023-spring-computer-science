@@ -10,6 +10,7 @@ include_directories(include)
 set(SOURCES
     src/cli.cpp 
     src/vcs.cpp 
+    src/utils.cpp
     main.cpp 
 )
 

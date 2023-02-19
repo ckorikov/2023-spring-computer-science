@@ -31,17 +31,12 @@ bool handle_snapshot_command(const std::vector<std::string> &args) {
 }
 
 bool handle_diff_command(const std::vector<std::string> &args) {
-  if (!args.empty()) {
-    std::cerr << "Error: diff command does not take any arguments."
-              << std::endl;
+  if (args.empty()) {
+    std::cerr << "Error: revert command requires a snapshot id." << std::endl;
     return false;
   }
 
-  std::cout
-      << "Displaying differences between current state and latest snapshot"
-      << std::endl;
-
-  return true;
+  return vcs::diff(args[0]);
 }
 
 bool handle_revert_command(const std::vector<std::string> &args) {
