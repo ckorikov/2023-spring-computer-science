@@ -68,13 +68,14 @@ void file_diff(const fs::path &file1, const fs::path &file2) {
 
 /// @brief Get next snapthot id (0, 1...)
 /// @return int snapthot id
-int get_next_snapshot_id() {
-  int snapshot_id = 0;
-  std::string snapshot_dir =
-      ".archive/snapshots/" + std::to_string(snapshot_id);
-  while (fs::exists(snapshot_dir)) {
-    snapshot_id++;
-    snapshot_dir = ".archive/snapshots/" + std::to_string(snapshot_id);
-  }
-  return snapshot_id;
+int get_curr_snapshot_id() {
+  int snapshot_id = -1;
+
+  for (; fs::exists(".archive/snapshots/" + std::to_string(++snapshot_id));)
+    ;
+  return --snapshot_id;
 }
+
+/// @brief Get next snapthot id (0, 1...)
+/// @return int snapthot id
+int get_next_snapshot_id() { return get_curr_snapshot_id() + 1; }

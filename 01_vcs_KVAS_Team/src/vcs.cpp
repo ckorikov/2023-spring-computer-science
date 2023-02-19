@@ -15,7 +15,7 @@ namespace vcs {
 namespace fs = std::filesystem;
 
 /// @brief Init repo, create aux dirs
-/// @return false if already initialised otherwise true
+/// @return false if already initialised. otherwise true
 bool init() {
   fs::path archive_dir = ".archive/snapshots";
 
@@ -38,7 +38,7 @@ bool snapshot(const std::string &message) {
     std::cout << "Not in repo" << std::endl;
     return false;
   }
-  int snapshot_id = get_next_snapshot_id();
+  int snapshot_id = get_curr_snapshot_id() + 1;
   fs::path snapshot_dir = ".archive/snapshots/" + std::to_string(snapshot_id);
   fs::create_directories(snapshot_dir / "files");
 
@@ -59,7 +59,6 @@ bool snapshot(const std::string &message) {
   }
 
   for (const auto &entry : fs::recursive_directory_iterator(".")) {
-    std::cout << entry.path().string() << std::endl;
     bool ignore = false;
     for (const auto &re : ignore_list) {
       if (std::regex_match(entry.path().string(), re))
@@ -86,7 +85,7 @@ bool snapshot(const std::string &message) {
 
 /// @brief Revert filetree to snapshot state
 /// @param id snapshot id
-/// @return False if snapshot does not exist
+/// @return False if snapshot does not exist, otherwise true
 bool revert(const std::string &id) {
   if (!fs::is_directory("./.archive/snapshots/" + id)) {
     std::cout << "No such snapshot" << std::endl;
@@ -110,7 +109,7 @@ bool revert(const std::string &id) {
 
 /// @brief Show filetree diff
 /// @param id Snapshot id
-/// @return true
+/// @return False if not in repo
 bool diff(const std::string &id) {
   if (!fs::is_directory("./.archive/snapshots/" + id)) {
     std::cout << "No such snapshot" << std::endl;
@@ -118,8 +117,7 @@ bool diff(const std::string &id) {
   }
   std::string snapshot_path = "./.archive/snapshots/" + id + "/files/";
 
-  std::vector<std::string> snapshot_files, current_files, deleted_files,
-      created_files, common_files;
+  std::vector<std::string> snapshot_files, current_files;
 
   for (const auto &entry : fs::recursive_directory_iterator(snapshot_path)) {
     current_files.push_back(
@@ -135,17 +133,9 @@ bool diff(const std::string &id) {
   std::sort(snapshot_files.begin(), snapshot_files.end());
   std::sort(current_files.begin(), current_files.end());
 
-  std::set_difference(snapshot_files.begin(), snapshot_files.end(),
-                      current_files.begin(), current_files.end(),
-                      std::back_inserter(created_files));
-
-  std::set_difference(current_files.begin(), current_files.end(),
-                      snapshot_files.begin(), snapshot_files.end(),
-                      std::back_inserter(deleted_files));
-
-  std::set_intersection(current_files.begin(), current_files.end(),
-                        snapshot_files.begin(), snapshot_files.end(),
-                        std::back_inserter(common_files));
+  auto deleted_files = vector_diff(current_files, snapshot_files);
+  auto created_files = vector_diff(snapshot_files, current_files);
+  auto common_files = vector_inter(current_files, snapshot_files);
 
   std::cout << "\t---\n";
 
@@ -159,6 +149,57 @@ bool diff(const std::string &id) {
     file_diff(entry, snapshot_path + entry);
     std::cout << "\t---\n";
   }
+
+  return true;
+}
+
+/// @brief Get status of repo
+/// @return False if not in repo, otherwise true
+bool status() {
+  if (!fs::is_directory("./.archive/snapshots/" +
+                        std::to_string(get_curr_snapshot_id()))) {
+    std::cout << "No last snapshot" << std::endl;
+    return false;
+  }
+  std::string snapshot_path = "./.archive/snapshots/" +
+                              std::to_string(get_curr_snapshot_id()) +
+                              "/files/";
+
+  std::vector<std::string> snapshot_files, current_files;
+
+  int modified_files = 0;
+
+  for (const auto &entry : fs::recursive_directory_iterator(snapshot_path)) {
+    current_files.push_back(
+        entry.path().string().substr(snapshot_path.length()));
+  }
+
+  for (const auto &entry : fs::recursive_directory_iterator(".")) {
+    if (entry.path().string().rfind("./.archive", 0) == 0)
+      continue;
+    snapshot_files.push_back(entry.path().string().substr(2));
+  }
+
+  std::sort(snapshot_files.begin(), snapshot_files.end());
+  std::sort(current_files.begin(), current_files.end());
+
+  auto deleted_files = vector_diff(current_files, snapshot_files);
+  auto created_files = vector_diff(snapshot_files, current_files);
+  auto common_files = vector_inter(current_files, snapshot_files);
+
+  if (!deleted_files.empty())
+    std::cout << "Deleted " << deleted_files.size() << " files\n";
+
+  if (!created_files.empty())
+    std::cout << "Created " << created_files.size() << " files\n";
+
+  for (const auto &entry : common_files) {
+    if (get_file_hash(fs::path(entry)) != get_file_hash(snapshot_path + entry))
+      modified_files++;
+  }
+
+  if (modified_files != 0)
+    std::cout << "Modified " << modified_files << " files\n";
 
   return true;
 }

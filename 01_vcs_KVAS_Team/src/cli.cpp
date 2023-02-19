@@ -39,6 +39,15 @@ bool handle_diff_command(const std::vector<std::string> &args) {
   return vcs::diff(args[0]);
 }
 
+bool handle_status_command(const std::vector<std::string> &args) {
+  if (!args.empty()) {
+    std::cerr << "Error: status command does not take any arguments."
+              << std::endl;
+    return false;
+  }
+
+  return vcs::status();
+}
 bool handle_revert_command(const std::vector<std::string> &args) {
   if (args.empty()) {
     std::cerr << "Error: revert command requires a snapshot id." << std::endl;

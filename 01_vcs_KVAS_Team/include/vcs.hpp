@@ -10,6 +10,7 @@ bool init();
 bool snapshot(const std::string &message);
 bool revert(const std::string &id);
 bool diff(const std::string &id);
+bool status();
 bool log();
 
 } // namespace vcs
