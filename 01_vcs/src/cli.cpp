@@ -11,7 +11,7 @@ bool handle_init_command(const std::vector<std::string> &args) {
     return false;
   }
 
-  if (!vcs_init()) {
+  if (!vcs::init()) {
     std::cerr << "Error: repository already exists." << std::endl;
     return false;
   }
@@ -20,14 +20,14 @@ bool handle_init_command(const std::vector<std::string> &args) {
   return true;
 }
 
-bool handle_commit_command(const std::vector<std::string> &args) {
+bool handle_snapshot_command(const std::vector<std::string> &args) {
   if (args.empty()) {
-    std::cerr << "Error: commit command requires a message argument."
+    std::cerr << "Error: snapshot command requires a message argument."
               << std::endl;
     return false;
   }
 
-  return vcs_commit(args[0]);
+  return vcs::snapshot(args[0]);
 }
 
 bool handle_diff_command(const std::vector<std::string> &args) {
@@ -37,10 +37,20 @@ bool handle_diff_command(const std::vector<std::string> &args) {
     return false;
   }
 
-  std::cout << "Displaying differences between current state and latest commit"
-            << std::endl;
+  std::cout
+      << "Displaying differences between current state and latest snapshot"
+      << std::endl;
 
   return true;
+}
+
+bool handle_revert_command(const std::vector<std::string> &args) {
+  if (args.empty()) {
+    std::cerr << "Error: revert command requires a snapshot id." << std::endl;
+    return false;
+  }
+
+  return vcs::revert(args[0]);
 }
 
 bool handle_help_command(const std::vector<std::string> &args) {
@@ -53,11 +63,12 @@ bool handle_help_command(const std::vector<std::string> &args) {
   std::cout
       << "Usage: vcs <command> [<args>]\n\n"
          "Commands:\n"
-         "  init    Create an empty vcs repository in the current directory\n"
-         "  commit  Record changes to the repository\n"
-         "  diff    Show differences between current state and last commit\n"
-         "  log     Show the commit history\n"
-         "  help    Show this message\n";
+         "  init      Create an empty vcs repository in the current directory\n"
+         "  snapshot  Record changes to the repository\n"
+         "  diff      Show differences between current state and last "
+         "snapshot\n"
+         "  log       Show the snapshot history\n"
+         "  help      Show this message\n";
 
   return true;
 }
@@ -68,7 +79,7 @@ bool handle_log_command(const std::vector<std::string> &args) {
     return false;
   }
 
-  vcs_log();
+  vcs::log();
 
   return true;
 }
