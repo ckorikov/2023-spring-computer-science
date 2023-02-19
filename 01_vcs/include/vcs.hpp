@@ -1,5 +1,5 @@
-#ifndef VCS_H
-#define VCS_H
+#ifndef VCS_HPP
+#define VCS_HPP
 
 #include <filesystem>
 #include <string>

@@ -1,5 +1,5 @@
-#ifndef CLI_H
-#define CLI_H
+#ifndef CLI_HPP
+#define CLI_HPP
 
 #include <string>
 #include <vector>

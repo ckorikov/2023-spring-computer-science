@@ -1,8 +1,8 @@
 #include <iostream>
 #include <string>
 
-#include "cli.h"
-#include "vcs.h"
+#include <cli.hpp>
+#include <vcs.hpp>
 
 bool handle_init_command(const std::vector<std::string> &args) {
   if (!args.empty()) {

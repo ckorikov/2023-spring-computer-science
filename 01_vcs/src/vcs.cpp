@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <vector>
 
-#include "vcs.h"
+#include <vcs.hpp>
 
 namespace vcs {
 
