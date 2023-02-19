@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <regex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -46,9 +47,26 @@ bool snapshot(const std::string &message) {
   std::cout << "Snapshot changes with message: " << message << std::endl;
 
   std::unordered_map<std::string, std::string> file_hashes;
+  std::vector<std::regex> ignore_list;
+
+  if (fs::is_regular_file("./.vcsignore")) {
+    std::ifstream ignore_file("./.vcsignore");
+    std::string str;
+    while (std::getline(ignore_file, str)) {
+      if (str.size() > 0)
+        ignore_list.push_back(std::regex(str));
+    }
+  }
 
   for (const auto &entry : fs::recursive_directory_iterator(".")) {
-    if (entry.path().string().rfind("./.archive", 0) == 0)
+    std::cout << entry.path().string() << std::endl;
+    bool ignore = false;
+    for (const auto &re : ignore_list) {
+      if (std::regex_match(entry.path().string(), re))
+        ignore = true;
+    }
+
+    if (ignore || (entry.path().string().rfind("./.archive", 0) == 0))
       continue;
 
     if (fs::is_directory(entry.path())) {
