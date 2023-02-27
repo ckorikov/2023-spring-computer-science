@@ -1,9 +1,40 @@
 #include <iostream>
 #include <string>
+#include <vector>
 
-#include <git2.h>
+#include <cli.h>
 
 int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        std::cerr << "Error: missing command" << std::endl;
+        return 1;
+    }
+
+    std::string command = argv[1];
+    std::vector<std::string> args(argv + 2, argv + argc);
+
+    if (command == "init") {
+        handle_init_command(args);
+    }
+    else if (command == "commit") {
+        handle_commit_command(args);
+    }
+    else if (command == "diff") {
+        handle_diff_command(args);
+    }
+    else if (command == "log") {
+        handle_log_command(args);
+    }
+    else if (command == "-h") {
+        handle_help_command(args);
+    }
+    else if (command == "listhistoryforfile") {
+        handle_listhistoryforfile_command(args);
+    else {
+        std::cerr << "Error: unknown command: " << command << std::endl;
+        return 1;
+    }
+    
     const std::string repo_path = ".";
     git_repository* repo;
     int error = git_repository_open(&repo, repo_path.c_str());
@@ -56,4 +87,19 @@ int main(int argc, char* argv[]) {
     }
 
     return error;
+    }
+
+    std::string label;
+    if (argc >= 3) {
+        label = argv[2];
+    }
+
+    if (command == "init")
+    {
+        handle_init_command(args, label);
+    }
+    else
+    
+        return 0;
 }
+    
