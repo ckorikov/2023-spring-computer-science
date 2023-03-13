@@ -106,3 +106,17 @@ bool vcs_log() {
 
   return true;
 }
+
+bool vcs_help() {
+    std::cout <<
+        "Usage: <vcs_command> [<args>]\n"
+        "vcs_commands:\n\n"
+        "vcs_init: Create a directory\n"
+        "vcs_commit: Committing changes with your message\n"
+        "vcs_diff: Show differences between current state and last snapshot\n"
+        "vcs_log: Output log message\n"
+        "vcs_help: Show this message\n" <<
+        std::endl;
+
+    return true;
+}
