@@ -1,7 +1,7 @@
-#include "weather.hpp"
-#include "network/network.hpp"
+#include "weather.cpp"
+#include "network/network.cpp"
 
-#include <boost/json.hpp>
+#include <boost/json.cpp>
 
 weather::weather(const std::string& api) {
     api_ = api;
