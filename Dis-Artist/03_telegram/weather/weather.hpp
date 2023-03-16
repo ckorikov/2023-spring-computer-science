@@ -1,5 +1,5 @@
-#ifndef WEATHER_CPP
-#define WEATHER_CPP
+#ifndef WEATHER_HPP
+#define WEATHER_HPP
 
 #include <boost/json/value.hpp>
 #include <string>
