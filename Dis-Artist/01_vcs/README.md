@@ -34,6 +34,9 @@
 - `Sqlite3`
 
 ## Как собрать и запустить проект<a name = "сборка"></a>
+
+Запустить виртуальную машину linux
+
 Клонировать проект:
 
 ```console
@@ -41,6 +44,7 @@ git clone https://github.com/bogdanova21/2023-spring-computer-science.git
 ```
 В консоли ввести следующее:
 ```console
+cd 2023-spring-computer-science/Dis-Artist/01_vcs/  
 g++ -std=c++17 cli.cpp vcs.cpp vcs.h cli.h main.cpp -lsqlite3 -o main.out
 ```
 ## Использование<a name = "использование"></a>
