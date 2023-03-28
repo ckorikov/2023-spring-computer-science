@@ -13,6 +13,13 @@ namespace calc
         std::istringstream input_ss(expression);
         std::stringstream output_ss;
 
+        if (expression == "plot")
+        {
+            Gnuplot gp;
+            gp << "plot sin(x)\n";
+            return "";
+        }
+
         int a;
         int b;
         char op;

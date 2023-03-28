@@ -1,4 +1,5 @@
 #include "ui.h"
+#include "gnuplot-iostream.h"
 
 namespace calc
 {
@@ -13,6 +14,20 @@ namespace calc
         return output;
     }
 
+    std::vector<double> x_vals;
+    std::vector<double> y_vals;
+    {
+        for (double x = 0; x < 10; x += 0.1)
+        {
+            x_vals.push_back(x);
+            y_vals.push_back(sin(x));
+        }
+
+        Gnuplot gp;
+        gp << "plot '-' with lines\n";
+        gp.send1d(boost::make_tuple(x_vals, y_vals));
+    }
+
     Element UI::render_input()
     {
         return hbox(text(" Expression: "), expression_input_box->Render());
@@ -22,6 +37,12 @@ namespace calc
     {
         if (logic_ref.expression == "plot")
         {
+            Gnuplot gp;
+            gp << "set term dumb\n";
+            gp << "plot sin(x)\n";
+            std::string output;
+            gp >> output;
+            return hbox(text(output));
             return graph(std::ref(demo_triangle)) | color(Color::BlueLight);
         }
         else
@@ -44,6 +65,15 @@ namespace calc
             logic_ref.expression.clear();
             return true;
         }
+        else if (event == Event::Custom)
+        {
+            if (logic_ref.expression == "plot")
+            {
+                element_output = render_output();
+                logic_ref.expression.clear();
+                return true;
+            }
+        }
         return false;
     }
 
@@ -57,6 +87,7 @@ namespace calc
         renderer |= CatchEvent([&](Event event)
                                { return process_events(event); });
 
+        screen.PostEvent(Event::Custom);
         screen.Loop(renderer);
     }
 
