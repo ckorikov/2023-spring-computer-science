@@ -46,5 +46,6 @@ g++ cli.cpp vcs.cpp vcs.h cli.h main.cpp -o pr1.out
 ## Использование
 
 Запуск с git
-
+```console
 ./pr1.out
+```
