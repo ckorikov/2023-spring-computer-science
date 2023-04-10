@@ -1,94 +1,72 @@
-#include "ui.h"
-#include "gnuplot-iostream.h"
+#include "vcs.h"
+#include "cli.h"
 
-namespace calc
+
+bool check_args(const std::string& value, const std::vector<std::string>& array)
 {
+    return std::find(array.begin(), array.end(), value) != array.end();
+}
 
-    std::vector<int> demo_triangle(int width, int height)
-    {
-        std::vector<int> output(width);
-        for (int i = 0; i < width; ++i)
-        {
-            output[i] = i % (height - 4) + 2;
-        }
-        return output;
+int main(int argc, char* argv[])
+{
+    std::vector<std::string> commands{ "status", "commit", "push", "remove", "log", "--help", "checkout", "branch", "merge" };
+    create_table();
+    if (!fs::exists(".revisions")) {
+        create_revisions_directory(".revisions");
+        std::ofstream head(".revisions/HEAD");
+        head << "main";
+        head.close();
+        create_revisions_directory(".revisions/branches/");
+        std::ofstream branches(".revisions/branches/branches.txt");
+        branches << "main\n";
+        branches.close();
     }
 
-    std::vector<double> x_vals;
-    std::vector<double> y_vals;
-    {
-        for (double x = 0; x < 10; x += 0.1)
-        {
-            x_vals.push_back(x);
-            y_vals.push_back(sin(x));
-        }
-
-        Gnuplot gp;
-        gp << "plot '-' with lines\n";
-        gp.send1d(boost::make_tuple(x_vals, y_vals));
+    if (argc == 1) {
+        cout << "Incorrect usage. Run ./a.out <add/commit/push>. Run ./main.out --help for more information." << endl;
+        return 1;
     }
 
-    Element UI::render_input()
-    {
-        return hbox(text(" Expression: "), expression_input_box->Render());
-    }
-
-    Element UI::render_output()
-    {
-        if (logic_ref.expression == "plot")
-        {
-            Gnuplot gp;
-            gp << "set term dumb\n";
-            gp << "plot sin(x)\n";
-            std::string output;
-            gp >> output;
-            return hbox(text(output));
-            return graph(std::ref(demo_triangle)) | color(Color::BlueLight);
+    if (check_args(argv[1], commands)) {
+        if (strcmp(argv[1], "commit") == 0) {
+            if (argc != 3) {
+                cout << "Invalid format: Enter ./main.out commit <message> " << endl;
+                return -1;
+            }
+            commit(argv[2]);
         }
-        else
-        {
-            std::string result = logic_ref.process_math();
-            return hbox(text(result));
-        }
-    }
-
-    bool UI::process_events(Event event)
-    {
-        if (event == Event::Escape)
-        {
-            screen.ExitLoopClosure()();
-            return true;
-        }
-        else if (event == Event::Return)
-        {
-            element_output = render_output();
-            logic_ref.expression.clear();
-            return true;
-        }
-        else if (event == Event::Custom)
-        {
-            if (logic_ref.expression == "plot")
-            {
-                element_output = render_output();
-                logic_ref.expression.clear();
-                return true;
+        if (strcmp(argv[1], "status") == 0)
+            status();
+        if (strcmp(argv[1], "log") == 0)
+            show_log();
+        if (strcmp(argv[1], "push") == 0)
+            push_to_server();
+        if (strcmp(argv[1], "--help") == 0)
+            display_help();
+        if (strcmp(argv[1], "checkout") == 0) {
+            if (!(2 < argc < 4)) {
+                cout << "Invalid format: Enter ./main.out checkout <commit_id> or ./main.out checkout -b <branch_name>" << endl;
+                return -1;
+            }
+            if (strcmp(argv[2], "-b") != 0)
+                checkout_commit_id(argv[2]);
+            else {
+                create_branch_and_checkout(argv[3]);
             }
         }
-        return false;
+        if ((strcmp(argv[1], "branch") == 0)) {
+            display_branches();
+        }
+        if (strcmp(argv[1], "merge") == 0) {
+            if (argc != 4)
+                cout << "Invalid format: Enter ./main.out merge <branch2> <branch1>" << endl;
+            else {
+                merge(argv[2], argv[3]);
+            }
+        }
     }
-
-    void UI::start()
-    {
-        auto component = Container::Vertical({expression_input_box});
-
-        auto renderer = Renderer(component, [&]
-                                 { return vbox({render_input(), separator(), element_output}) | border; });
-
-        renderer |= CatchEvent([&](Event event)
-                               { return process_events(event); });
-
-        screen.PostEvent(Event::Custom);
-        screen.Loop(renderer);
+    else {
+        cout << "Unknown command: " << argv[1] << endl << "Run ./a.out <add/commit/push>" << endl;
     }
-
-} // namespace calc
+    return 0;
+}
