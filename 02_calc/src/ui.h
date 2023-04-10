@@ -1,11 +1,11 @@
 #ifndef UI_HPP
 #define UI_HPP
 
-#include "ftxui/component/component_base.hpp"     // for ComponentBase
-#include "ftxui/component/component_options.hpp"  // for InputOption
-#include "ftxui/component/component.hpp"          // for Input, Renderer, Vertical
-#include "ftxui/dom/elements.hpp"                 // for text, hbox, separator, Element, operator|, vbox, border
-#include "ftxui/component/screen_interactive.hpp" // for Component, ScreenInteractive
+#include "ftxui/component/component_base.hpp"     
+#include "ftxui/component/component_options.hpp"  
+#include "ftxui/component/component.hpp"          
+#include "ftxui/dom/elements.hpp"                 
+#include "ftxui/component/screen_interactive.hpp" 
 
 #include "logic.h"
 
@@ -38,6 +38,25 @@ namespace calc
         ScreenInteractive screen = ScreenInteractive::Fullscreen();
     };
 
-}
+    // Variable support
+    class VariableInput : public InputBase {
+    public:
+        VariableInput(std::string* value, const std::string& placeholder)
+            : InputBase(placeholder), value_(value) {}
+
+        Element Render() override {
+            return InputBase::Render() | on_enter([this] {
+                auto it = logic_ref.variables.find(*value_);
+                if (it != logic_ref.variables.end()) {
+                    *value_ = std::to_string(it->second);
+                }
+            });
+        }
+
+    private:
+        std::string* value_;
+    };
+
+} // namespace calc
 
 #endif // UI_HPP
