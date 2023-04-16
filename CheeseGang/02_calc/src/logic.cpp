@@ -13,20 +13,8 @@ namespace calc
         std::istringstream input_ss(expression);
         std::stringstream output_ss;
 
-<<<<<<< HEAD
-        if (expression == "plot")
-        {
-            Gnuplot gp;
-            gp << "plot sin(x)\n";
-            return "";
-        }
-
-        int a;
-        int b;
-=======
         double a;
         double b;
->>>>>>> refs/remotes/origin/main
         char op;
         input_ss >> a >> op >> b;
 
@@ -34,13 +22,6 @@ namespace calc
         {
             output_ss << a << op << b << "=" << a + b;
         }
-<<<<<<< HEAD
-        else
-        {
-            output_ss << a << op << b << "=" << a + b;
-        }
-        return output_ss.str();
-=======
         else if (op == '-')
         {
             output_ss << a << op << b << "=" << a - b;
@@ -58,6 +39,17 @@ namespace calc
             else
             {
                 output_ss << a << op << b << "=" << a / b;
+            }
+        }
+        else if (op == '%')
+        {
+            if (b == 0)
+            {
+                output_ss << "Error: division by zero";
+            }
+            else
+            {
+                output_ss << a << op << b << "=" << a % b;
             }
         }
         else if (op == '^')
@@ -102,6 +94,5 @@ namespace calc
         }
         return output_ss.str();
  
->>>>>>> refs/remotes/origin/main
     }
 }
