@@ -41,11 +41,11 @@ git clone https://github.com/AP04D/2023-spring-computer-science.git
 В консоли ввести следующее:
 ```console
 cd 2023-spring-computer-science/CheeseGang/01_vcs/  
-g++ cli.cpp vcs.cpp vcs.h cli.h main.cpp -o pr1.out
+g++ cli.cpp vcs.cpp vcs.h cli.h main.cpp -o main.out
 ```
 ## Использование
 
 Запуск с git
 ```console
-./pr1.out
+./main.out
 ```
