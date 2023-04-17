@@ -1,14 +1,26 @@
-#ifndef VCS_H
-#define VCS_H
+#ifndef VCH_H
+#define VCH_H
 
-#include <string>
-#include <unordered_map>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fstream>
+#include <iostream>
+#include <vector>
+#include <filesystem>
 
-bool vcs_init();
-bool vcs_commit(const std::string& message);
-bool vcs_log();
-bool vcs_help();
+using std::string;
+using std::endl;
+using std::cout;
+using std::vector;
 
-std::unordered_map<std::string, std::string> create_snapshot();
+void commit(std::string message);
+void show_log();
+void checkout_commit_id(string commit_id);
+void create_branch_and_checkout(string branch_name);
+void display_branches();
+void merge(string branch_2, string branch_1);
+void display_help();
 
 #endif
