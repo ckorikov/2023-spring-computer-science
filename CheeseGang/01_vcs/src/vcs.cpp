@@ -320,7 +320,7 @@ void merge(string branch_2, string branch_1) {
 }
 
 void display_help() {
-    cout<<"Usage: ./main.out [--help] [status] [commit <message>] [push] [checkout <commit_id>] [log]\n\n";
+    cout<<"Usage: ./main.out [-h] [status] [commit <message>] [push] [checkout <commit_id>] [log]\n\n";
     cout<<"\t Status: Prints current status of files in repository\n";
     cout<<"\t Commit: Records the revised files to local storage\n";
     cout<<"\t Push: Pushes the file changes to remote server\n";
