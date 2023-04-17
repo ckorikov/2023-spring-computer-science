@@ -1,105 +1,73 @@
-#include <iostream>
-#include <string>
-#include <vector>
+#include "vcs.h"
+#include "cli.h"
 
-#include <cli.h>
 
-int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        std::cerr << "Error: missing command" << std::endl;
-        return 1;
-    }
-
-    std::string command = argv[1];
-    std::vector<std::string> args(argv + 2, argv + argc);
-
-    if (command == "init") {
-        handle_init_command(args);
-    }
-    else if (command == "commit") {
-        handle_commit_command(args);
-    }
-    else if (command == "diff") {
-        handle_diff_command(args);
-    }
-    else if (command == "log") {
-        handle_log_command(args);
-    }
-    else if (command == "-h") {
-        handle_help_command(args);
-    }
-    else if (command == "listhistoryforfile") {
-        handle_listhistoryforfile_command(args);
-    else {
-        std::cerr << "Error: unknown command: " << command << std::endl;
-        return 1;
-    }
-    
-    const std::string repo_path = ".";
-    git_repository* repo;
-    int error = git_repository_open(&repo, repo_path.c_str());
-    if (error != 0) {
-        std::cerr << "Failed to open repository: " << git_error_last()->message << std::endl;
-        return error;
-    }
-
-    git_status_options status_options = GIT_STATUS_OPTIONS_INIT;
-    int init_error = git_status_init_options(&status_options, GIT_STATUS_OPTIONS_VERSION);
-    if (init_error != 0) {
-        std::cerr << "Failed to initialize status options: " << git_error_last()->message << std::endl;
-        git_repository_free(repo);
-        return init_error;
-    }
-    status_options.show = GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
-    status_options.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED | GIT_STATUS_OPT_RENAMES_HEAD_TO_INDEX |
-        GIT_STATUS_OPT_SORT_CASE_SENSITIVELY | GIT_STATUS_OPT_EXCLUDE_SUBMODULES;
-    status_options.pathspec.count = 0;
-
-    error = git_status_foreach(repo, &status_options, [](const char* path, unsigned int flags, void* payload) -> int {
-        std::cout << path << " ";
-        if (flags & GIT_STATUS_INDEX_NEW) {
-            std::cout << "added to index ";
-        }
-        if (flags & GIT_STATUS_INDEX_MODIFIED) {
-            std::cout << "modified in index ";
-        }
-        if (flags & GIT_STATUS_WT_NEW) {
-            std::cout << "untracked in workdir ";
-        }
-        if (flags & GIT_STATUS_WT_MODIFIED) {
-            std::cout << "modified in workdir ";
-        }
-        if (flags & GIT_STATUS_WT_TYPECHANGE) {
-            std::cout << "typechanged in workdir ";
-        }
-        std::cout << std::endl;
-        return 0;
-        }, nullptr);
-
-    if (error != 0) {
-        std::cerr << "Failed to iterate over repository status: " << git_error_last()->message << std::endl;
-    }
-
-    int free_error = git_repository_free(repo);
-    if (free_error != 0) {
-        std::cerr << "Failed to free repository: " << git_error_last()->message << std::endl;
-        return free_error;
-    }
-
-    return error;
-    }
-
-    std::string label;
-    if (argc >= 3) {
-        label = argv[2];
-    }
-
-    if (command == "init")
-    {
-        handle_init_command(args, label);
-    }
-    else
-    
-        return 0;
+bool check_args(const std::string &value, const std::vector<std::string> &array)
+{
+    return std::find(array.begin(), array.end(), value) != array.end();
 }
-    
+
+int main(int argc, char* argv[])
+{
+    std::vector<std::string> commands {"status", "commit", "push", "remove", "log", "--help", "checkout", "branch", "merge"};
+    create_table();
+    if (!fs::exists(".revisions")) {
+        create_revisions_directory(".revisions");
+        std::ofstream head(".revisions/HEAD");
+        head << "main";
+        head.close();
+        create_revisions_directory(".revisions/branches/");
+        std::ofstream branches(".revisions/branches/branches.txt");
+        branches << "main\n";
+        branches.close();
+    }
+
+    if (argc == 1) {
+        cout<<"Incorrect usage. Run ./a.out <add/commit/push>. Run ./main.out --help for more information."<<endl;
+        return 1;
+    }
+
+    if (check_args(argv[1], commands)) {
+        if (strcmp(argv[1], "commit") == 0){
+            if (argc != 3) {
+                cout<<"Invalid format: Enter ./main.out commit <message> "<<endl;
+                return -1;
+            }
+            commit(argv[2]);
+        }
+        if (strcmp(argv[1], "status") == 0)
+            status();
+        if (strcmp(argv[1], "log") == 0)
+            show_log();
+        if (strcmp(argv[1], "push") == 0)
+            push_to_server();
+        if (strcmp(argv[1], "--help") == 0)
+            display_help();
+        if (strcmp(argv[1], "checkout") == 0){
+            if (!(2<argc<4)) {
+                cout<<"Invalid format: Enter ./main.out checkout <commit_id> or ./main.out checkout -b <branch_name>"<<endl;
+                return -1;
+            }
+            if (strcmp(argv[2], "-b")!=0)
+                checkout_commit_id(argv[2]);
+            else {
+                create_branch_and_checkout(argv[3]);
+            }
+        }
+        if ((strcmp(argv[1], "branch") == 0)) {
+            display_branches();
+        }
+        if (strcmp(argv[1], "merge") == 0){
+            if (argc != 4)
+                cout<<"Invalid format: Enter ./main.out merge <branch2> <branch1>"<<endl;
+            else {
+                merge(argv[2], argv[3]);
+            }
+        }
+    }
+    else {
+        cout<<"Unknown command: "<<argv[1]<<endl<<"Run ./a.out <add/commit/push>"<<endl;
+    }
+    return 0;
+}
+
