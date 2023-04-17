@@ -9,7 +9,7 @@ bool check_args(const std::string &value, const std::vector<std::string> &array)
 
 int main(int argc, char* argv[])
 {
-    std::vector<std::string> commands {"status", "commit", "push", "remove", "log", "--help", "checkout", "branch", "merge"};
+    std::vector<std::string> commands {"status", "commit", "push", "remove", "log", "-h", "checkout", "branch", "merge"};
     create_table();
     if (!fs::exists(".revisions")) {
         create_revisions_directory(".revisions");
@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
     }
 
     if (argc == 1) {
-        cout<<"Incorrect usage. Run ./a.out <add/commit/push>. Run ./main.out --help for more information."<<endl;
+        cout<<"Incorrect usage. Run ./a.out <add/commit/push>. Run ./main.out -h for more information."<<endl;
         return 1;
     }
 
@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
             show_log();
         if (strcmp(argv[1], "push") == 0)
             push_to_server();
-        if (strcmp(argv[1], "--help") == 0)
+        if (strcmp(argv[1], "-h") == 0)
             display_help();
         if (strcmp(argv[1], "checkout") == 0){
             if (!(2<argc<4)) {
