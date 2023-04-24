@@ -38,7 +38,6 @@ namespace calc
         ScreenInteractive screen = ScreenInteractive::Fullscreen();
     };
 
-    // Variable support
     class VariableInput : public InputBase {
     public:
         VariableInput(std::string* value, const std::string& placeholder)
@@ -57,6 +56,6 @@ namespace calc
         std::string* value_;
     };
 
-} // namespace calc
+} 
 
-#endif // UI_HPP
+#endif 
