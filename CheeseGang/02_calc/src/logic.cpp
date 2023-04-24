@@ -114,12 +114,4 @@ namespace calc
         }
         return output_ss.str();
     }
-    void Logic::print_history()
-    {
-        std::cout << "История операций:\n";
-        for (auto op : history)
-        {
-            std::cout << op << '\n';
-        }
-    }
 }
