@@ -32,7 +32,7 @@ git clone https://github.com/AP04D/2023-spring-computer-science.git
 В консоли ввести следующее:
 ```console
 cd 2023-spring-computer-science/CheeseGang/02_calc/  
-main.cpp src/logic.cpp src/logic.h src/math_constants.h src/physics_constants.h src/ui.cpp src/ui.h -o pr2.out
+g++ main.cpp src/logic.cpp src/logic.h src/math_constants.h src/physics_constants.h src/ui.cpp src/ui.h -o pr2.out
 ```
 
 ## Использование
