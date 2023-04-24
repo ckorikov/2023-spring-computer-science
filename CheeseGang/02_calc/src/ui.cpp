@@ -35,7 +35,6 @@ int main(int argc, char* argv[])
             }
             commit(argv[2]);
         }
-<<<<<<< HEAD
         if (strcmp(argv[1], "status") == 0)
             status();
         if (strcmp(argv[1], "log") == 0)
@@ -71,10 +70,34 @@ int main(int argc, char* argv[])
     }
     return 0;
 }
-=======
+#include "ui.h"
+
+namespace calc
+{
+
+    std::vector<int> demo_triangle(int width, int height)
+    {
+        std::vector<int> output(width);
+        for (int i = 0; i < width; ++i)
+        {
+            output[i] = i % (height - 4) + 2;
+        }
+        return output;
+    }
+
+    Element UI::render_input()
+    {
+        return hbox(text(" Expression: "), expression_input_box->Render());
+    }
+
+    Element UI::render_output()
+    {
+        if (logic_ref.expression == "plot")
+        {
+            return graph(std::ref(demo_triangle)) | color(Color::BlueLight);
+        }
         else
         {
-            logic_ref.variables.clear(); // added to clear existing variables
             std::string result = logic_ref.process_math();
             return hbox(text(result));
         }
@@ -93,31 +116,6 @@ int main(int argc, char* argv[])
             logic_ref.expression.clear();
             return true;
         }
-        else if (event == Event::Custom)
-        {
-            // added for variable support
-            std::string input = logic_ref.expression;
-
-            // check if it is a variable declaration
-            std::size_t pos = input.find("=");
-            if (pos != std::string::npos)
-            {
-                std::string var_name = input.substr(0, pos);
-                std::string var_value_str = input.substr(pos + 1);
-                try
-                {
-                    int var_value = std::stoi(var_value_str);
-                    logic_ref.variables[var_name] = var_value;
-                    element_output = hbox(text("Variable created: "), text(var_name), text(" = "), text(var_value_str));
-                    return true;
-                }
-                catch (const std::invalid_argument &ia)
-                {
-                    element_output = hbox(text("Error: Invalid argument"));
-                    return true;
-                }
-            }
-        }
         return false;
     }
 
@@ -133,6 +131,20 @@ int main(int argc, char* argv[])
 
         screen.Loop(renderer);
     }
+    while (running) {
+        auto event = screen.PollEvent();
+        running = process_events(event);
 
+        if (logic_ref.expression_changed()) {
+            logic_ref.evaluate_expression();
+            element_output = render_output();
+            screen.PostEvent(Event::Custom);
+
+            // Render plot
+            std::vector<double> x = { 1, 2, 3, 4, 5 };
+            std::vector<double> y = { 1, 4, 9, 16, 25 };
+            auto plot_element = render_plot(x, y);
+            screen.Render(plot_element);
+        }
+    }
 } // namespace calc
->>>>>>> refs/remotes/origin/main
