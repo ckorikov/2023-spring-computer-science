@@ -5,8 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 <<<<<<< HEAD
 find_package(Gnuplot REQUIRED)
-=======
->>>>>>> refs/remotes/origin/main
 
 # --- Fetch FTXUI --------------------------------------------------------------
 include(FetchContent)
@@ -26,8 +24,6 @@ endif()
 add_executable(calc main.cpp src/ui.cpp src/logic.cpp)
 target_include_directories(calc PRIVATE src)
 target_link_libraries(calc ftxui::dom ftxui::screen ftxui::component)
-<<<<<<< HEAD
 target_link_libraries(calc ftxui::dom ftxui::screen ftxui::component ${Gnuplot_LIBRARIES})
-=======
+target_link_libraries(calc ${Gnuplot_LIBRARIES})
 target_sources(calc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/math_constants.h ${CMAKE_CURRENT_SOURCE_DIR}/src/physics_constants.h)
->>>>>>> refs/remotes/origin/main

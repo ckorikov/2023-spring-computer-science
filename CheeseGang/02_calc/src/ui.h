@@ -37,7 +37,13 @@ namespace calc
         Element element_output;
         ScreenInteractive screen = ScreenInteractive::Fullscreen();
     };
-
+    Element render_plot(const std::vector<double>& x, const std::vector<double>& y)
+    {
+        auto plot = Gnuplot()
+            .title("Graph")
+            .plot(x, y);
+        return vbox({ separator(), text("Graph:"), separator(), plot, separator() });
+    }
 }
 
 #endif // UI_HPP

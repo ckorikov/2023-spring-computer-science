@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #include "vcs.h"
 #include "cli.h"
 
@@ -71,7 +70,6 @@ int main(int argc, char* argv[])
     }
     return 0;
 }
-=======
 #include "ui.h"
 
 namespace calc
@@ -133,6 +131,20 @@ namespace calc
 
         screen.Loop(renderer);
     }
+    while (running) {
+        auto event = screen.PollEvent();
+        running = process_events(event);
 
+        if (logic_ref.expression_changed()) {
+            logic_ref.evaluate_expression();
+            element_output = render_output();
+            screen.PostEvent(Event::Custom);
+
+            // Render plot
+            std::vector<double> x = { 1, 2, 3, 4, 5 };
+            std::vector<double> y = { 1, 4, 9, 16, 25 };
+            auto plot_element = render_plot(x, y);
+            screen.Render(plot_element);
+        }
+    }
 } // namespace calc
->>>>>>> refs/remotes/origin/main
