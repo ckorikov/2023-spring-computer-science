@@ -1,9 +1,12 @@
 #include "logic.h"
 #include <sstream>
 #include <unordered_map>
+#include <vector>
 
 namespace calc
 {
+    std::vector<std::string> history;
+    
     std::string Logic::process_math()
     {
         if (expression.empty())
@@ -112,6 +115,15 @@ namespace calc
                 output_ss << "Error: unsupported operation or constant";
             }
         }
+        history.push_back(output_ss.str());
         return output_ss.str();
+    }
+    void Logic::print_history()
+    {
+        std::cout << "История операций:\n";
+        for (auto op : history)
+        {
+            std::cout << op << '\n';
+        }
     }
 }
