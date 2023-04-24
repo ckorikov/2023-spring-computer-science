@@ -3,7 +3,6 @@ project(calc)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-<<<<<<< HEAD
 find_package(Gnuplot REQUIRED)
 
 # --- Fetch FTXUI --------------------------------------------------------------
