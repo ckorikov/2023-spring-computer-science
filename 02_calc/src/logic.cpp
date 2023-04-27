@@ -1,9 +1,12 @@
 #include "logic.h"
+#include <cmath>
 #include <sstream>
-#include <unordered_map> // added for variable support
+#include <vector>
 
 namespace calc
 {
+    std::vector<std::string> history;   // история операций
+
     std::string Logic::process_math()
     {
         if (expression.empty())
@@ -11,77 +14,89 @@ namespace calc
             return "";
         }
 
-        // added code for variable support
-        std::unordered_map<std::string, int> variables;
-        variables["pi"] = 3.14159265358979323846;
-        variables["e"] = 2.71828182845904523536;
-
         std::istringstream input_ss(expression);
         std::stringstream output_ss;
 
-<<<<<<< HEAD
-        if (expression == "plot")
-        {
-            Gnuplot gp;
-            gp << "plot sin(x)\n";
-            return "";
-        }
-
         int a;
-        int b;
         char op;
-        input_ss >> a >> op >> b;
-=======
-        std::string token;
-        int result = 0;
-        bool is_first_number = true;
->>>>>>> refs/remotes/origin/main
+        input_ss >> a >> op;
 
-        while (std::getline(input_ss, token, ' '))
+        switch (op)
         {
-            if (variables.find(token) != variables.end())
-            {
-                token = std::to_string(variables[token]);
-            }
-
-            std::stringstream number_stream(token);
-            int number = 0;
-
-            if (number_stream >> number)
-            {
-                if (is_first_number)
+            case '+':
                 {
-                    result = number;
-                    is_first_number = false;
+                    int b;
+                    input_ss >> b;
+                    output_ss << a << op << b << "=" << a + b;
+                    break;
                 }
-                else
+            case '-':
                 {
-                    switch (last_operator)
+                    int b;
+                    input_ss >> b;
+                    output_ss << a << op << b << "=" << a - b;
+                    break;
+                }
+            case '*':
+                {
+                    int b;
+                    input_ss >> b;
+                    output_ss << a << op << b << "=" << a * b;
+                    break;
+                }    
+            case '/':
+                {
+                    int b;
+                    input_ss >> b;
+                    output_ss << a << op << b << "=" << a / b;
+                    break;
+                }
+            case '^':
+                {
+                    if (input_ss.peek() == '2')
                     {
-                    case '+':
-                        result += number;
-                        break;
-                    case '-':
-                        result -= number;
-                        break;
-                    case '*':
-                        result *= number;
-                        break;
-                    case '/':
-                        result /= number;
-                        break;
-                    default:
-                        break;
+                        input_ss.ignore(); // пропускаем символ '^'
+
+                        output_ss << a << "^2" << "=" << pow(a, 2);
                     }
+                    else
+                    {
+                        output_ss << "Неизвестная операция";
+                    }
+                    break;
                 }
-            }
-            else if (token.length() == 1 && token.find_first_of("+-*/") != std::string::npos)
-            {
-                last_operator = token[0];
-            }
+            case 's':
+                {
+                    if (input_ss.peek() == 'q')
+                    {
+                        input_ss.ignore(4); // пропускаем символы 's', 'q', 'r', 't'
+
+                        output_ss << "sqrt(" << a << ")" << "=" << sqrt(a);
+                    }
+                    else
+                    {
+                        output_ss << "Неизвестная операция";
+                    }
+                    break;
+                }
+            default:
+                {
+                    output_ss << "Неизвестная операция";
+                    break;
+                }
         }
 
-        output_ss << result;
+        history.push_back(output_ss.str());    // добавляем операцию в историю
         return output_ss.str();
     }
+
+    void Logic::print_history()
+    {
+        std::cout << "История операций:\n";
+        for (auto op : history)
+        {
+            std::cout << op << '\n';
+        }
+    }
+}
 }
