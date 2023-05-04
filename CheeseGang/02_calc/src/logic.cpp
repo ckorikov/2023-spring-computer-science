@@ -2,18 +2,21 @@
 #include <sstream>
 #include <unordered_map>
 #include <vector>
+#include <cmath>
+#include <cstring>
+#include <iostream>
 
 namespace calc
 {
     std::vector<std::string> history;
-    
+
     std::string Logic::process_math()
     {
         if (expression.empty())
         {
             return "";
         }
-  
+
         std::unordered_map<char, double> variables;
 
         std::istringstream input_ss(expression);
@@ -26,7 +29,7 @@ namespace calc
 
         if (op == '=')
         {
-           variables[a] = b;
+            variables[a] = b;
             output_ss << a << op << b;
         }
         else
@@ -96,7 +99,7 @@ namespace calc
             }
             else if (op == 'p')
             {
-                output_ss << "pi=" << pi;
+                output_ss << "p=" << M_PI;
             }
             else if (op == 'e')
             {
@@ -118,9 +121,10 @@ namespace calc
         history.push_back(output_ss.str());
         return output_ss.str();
     }
-    void Logic::print_history()
+
+    void print_history()
     {
-        std::cout << "Ð˜ÑÑ‚Ð¾Ñ€Ð¸Ñ Ð¾Ð¿ÐµÑ€Ð°Ñ†Ð¸Ð¹:\n";
+        std::cout << "Èñòîðèÿ îïåðàöèé:\n";
         for (auto op : history)
         {
             std::cout << op << '\n';
