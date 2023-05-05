@@ -29,14 +29,14 @@ void write_file(string text) {
 int create_revisions_directory(string text) {
     const char* path = text.c_str();
 
-    if( stat( path, &info ) != 0 ) {
-        if (mkdir(path, 0777) == -1)
-        cerr << "Error :  " << strerror(errno) << endl;
+    if (stat(path, &info) != 0) {
+        if (mkdir(path) == -1)
+            cerr << "Error :  " << strerror(errno) << endl;
     }
-    else if( info.st_mode & S_IFDIR )  
-        return 2;    
+    else if (info.st_mode & S_IFDIR)
+        return 2;
     else
-        cout<<"that is not a directory";
+        cout << "that is not a directory";
     return 0;
 }
 
