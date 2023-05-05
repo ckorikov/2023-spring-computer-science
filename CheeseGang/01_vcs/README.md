@@ -41,7 +41,7 @@ git clone https://github.com/AP04D/2023-spring-computer-science.git
 В консоли ввести следующее:
 ```console
 cd 2023-spring-computer-science/CheeseGang/01_vcs/  
-g++ main.cpp src/cli.cpp src/vcs.cpp src/vcs.h src/cli.h -lsqlite3 -o main.out
+g++ -I/C/SQLite cli.cpp vcs.cpp main.cpp -L/C/SQLite -lsqlite3 -o main.out (вместо /C/SQLite указать путь к библиотеке sqlite)
 ```
 ## Использование
 
