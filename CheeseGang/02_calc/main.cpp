@@ -3,8 +3,15 @@
 
 int main()
 {
-  calc::Logic logic;
-  calc::UI ui(logic);
+  calc::Logic calculator;
+  calc::UI ui(calculator);
+  std::vector<std::string> history = calculator.get_history();
+  std::cout << "История операций:\n";
+  for (const auto& entry : history)
+  {
+      std::cout << entry << '\n';
+  }
+  
 
   ui.start();
 

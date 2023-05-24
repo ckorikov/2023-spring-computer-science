@@ -1,11 +1,13 @@
 #ifndef UI_HPP
 #define UI_HPP
 
-#include "ftxui/component/component_base.hpp"     // for ComponentBase
-#include "ftxui/component/component_options.hpp"  // for InputOption
-#include "ftxui/component/component.hpp"          // for Input, Renderer, Vertical
-#include "ftxui/dom/elements.hpp"                 // for text, hbox, separator, Element, operator|, vbox, border
-#include "ftxui/component/screen_interactive.hpp" // for Component, ScreenInteractive
+#include "ftxui/component/component_base.hpp"     
+#include "ftxui/component/component_options.hpp"  
+#include "ftxui/component/component.hpp"          
+#include "ftxui/dom/elements.hpp"            
+#include "physics_constants.h"
+#include "math_constants.h"
+#include "ftxui/component/screen_interactive.hpp" 
 
 #include "logic.h"
 
@@ -37,13 +39,9 @@ namespace calc
         Element element_output;
         ScreenInteractive screen = ScreenInteractive::Fullscreen();
     };
-    Element render_plot(const std::vector<double>& x, const std::vector<double>& y)
-    {
-        auto plot = Gnuplot()
-            .title("Graph")
-            .plot(x, y);
-        return vbox({ separator(), text("Graph:"), separator(), plot, separator() });
-    }
-}
 
-#endif // UI_HPP
+ 
+
+} 
+
+#endif 
