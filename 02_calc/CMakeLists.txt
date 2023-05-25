@@ -3,6 +3,7 @@ project(calc)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+find_package(Gnuplot REQUIRED)
 
 # --- Fetch FTXUI --------------------------------------------------------------
 include(FetchContent)
@@ -22,3 +23,4 @@ endif()
 add_executable(calc main.cpp src/ui.cpp src/logic.cpp)
 target_include_directories(calc PRIVATE src)
 target_link_libraries(calc ftxui::dom ftxui::screen ftxui::component)
+target_link_libraries(calc ftxui::dom ftxui::screen ftxui::component ${Gnuplot_LIBRARIES})
